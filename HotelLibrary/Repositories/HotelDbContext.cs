@@ -1,10 +1,5 @@
 ﻿using HotelLibrary.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HotelLibrary.Repositories
 {
@@ -21,9 +16,13 @@ namespace HotelLibrary.Repositories
         public virtual DbSet<Hotel> Hotels { get; set; }
         public virtual DbSet<HotelFeature> HotelFeatures { get; set; }
         public virtual DbSet<HotelImages> HotelImages{ get; set; }
+        public virtual DbSet<HotelManager> HotelManagers { get; set; }
+        public virtual DbSet<HotelContact> HotelContacts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Hotel>().HasQueryFilter(h => !h.IsDelete);
+
             base.OnModelCreating(modelBuilder);
 
         }
