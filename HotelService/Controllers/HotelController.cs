@@ -1,4 +1,5 @@
 ﻿using HotelLibrary.Extensions;
+using HotelService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,24 +11,40 @@ namespace HotelService.Controllers
     public class HotelController : Controller
     {
         private readonly JwtHandler _jwtHandler;
+        private readonly ILogger<ElasticsearchLogger> _logger;
 
-        public HotelController(JwtHandler jwtHandler)
+        public HotelController(JwtHandler jwtHandler, ILogger<ElasticsearchLogger> logger)
         {
             _jwtHandler = jwtHandler;
-        }
+            _logger = logger;
+    }
 
         [AllowAnonymous]
 
         [HttpGet("GetToken")]
         public async Task<bool> GetToken()
         {
+
+            _logger.LogError("Error");
+
+            _logger.LogInformation("information"); 
+            _logger.LogWarning("warning");
             var aa = _jwtHandler.GenerateJwt("Key2");
             return true;
         }
-        //    [HideInSwagger] // Metodu gizlemek için özel anotasyonu kullanın
 
-        [HttpGet(Name ="GetPrivateMethodCheck")]
-        public async Task<bool> GetPrivateMethodCheck()
+        /// <summary>
+        /// Bu kisim Rapor kismindan kullanici bilgilerini cekmek icindir.
+        /// parametre ile Gonderilen tokeni parse edip key kontrol edilir
+        /// id ile kulanici bilgisi alinir
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="Token"></param>
+        /// <returns></returns>
+
+        [AllowAnonymous]
+        [HttpGet("GetPrivateMethodCheck/{Id}/{Token}")]
+        public async Task<bool> GetPrivateMethodCheck(long Id,string Token)
         {
             string jwt = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 

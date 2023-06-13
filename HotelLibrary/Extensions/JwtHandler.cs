@@ -21,7 +21,7 @@ namespace HotelLibrary.Extensions
             {
             new Claim("JwtSecurityKey2", key)
         };
-
+            //burada secret key alacagiz.
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),

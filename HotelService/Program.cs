@@ -3,8 +3,11 @@ using HotelLibrary.Extensions;
 using HotelLibrary.Interfaces;
 using HotelLibrary.Repositories;
 using HotelLibrary.Services;
+using HotelService.Models;
+using HotelService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -27,6 +30,7 @@ namespace HotelService
                 option.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 
             });
+            builder.Services.Configure<ElasticSettings>(builder.Configuration.GetSection("ElasticsearchSettings"));
 
             builder.Services.AddDbContext<HotelDbContext>(config =>
             {
@@ -57,7 +61,7 @@ namespace HotelService
 
             builder.Services.AddTransient<IHotelService, HotelServices>();
             builder.Services.AddScoped<HotelDbContext>();
-
+            builder.Services.AddSingleton<ILogger,ElasticsearchLogger>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
