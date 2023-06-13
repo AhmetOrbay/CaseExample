@@ -1,4 +1,6 @@
-﻿namespace HotelService.Models
+﻿using Microsoft.Extensions.Logging;
+
+namespace HotelLibrary.Models
 {
     public class LogModel
     {

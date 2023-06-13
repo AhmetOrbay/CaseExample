@@ -1,6 +1,7 @@
 ﻿
 using HotelLibrary.Extensions;
 using HotelLibrary.Interfaces;
+using HotelLibrary.Models;
 using HotelLibrary.Repositories;
 using HotelLibrary.Services;
 using HotelService.Models;

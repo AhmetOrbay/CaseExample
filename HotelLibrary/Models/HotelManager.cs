@@ -13,5 +13,6 @@ namespace HotelLibrary.Models
         public long HotelId { get; set; }
         public Hotel Hotels{ get; set; }
         public DateTime ManagerCreatedDate { get; set; }
+        public bool IsDelete { get; set; } = false;
     }
 }

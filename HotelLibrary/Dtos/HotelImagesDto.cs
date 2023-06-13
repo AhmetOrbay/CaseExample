@@ -5,6 +5,6 @@ namespace HotelLibrary.Dtos
     {
         public long Id { get; set; }
         public long Hotel { get; set; }
-        public HotelDto Hotels { get; set; }
+        public HotelDto? Hotels { get; set; }
     }
 }

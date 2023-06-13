@@ -1,9 +1,9 @@
 ﻿using Elasticsearch.Net;
-using HotelService.Models;
+using HotelLibrary.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace HotelService.Services
+namespace HotelLibrary.Services
 {
     public class ElasticsearchLogger : ILogger
     {

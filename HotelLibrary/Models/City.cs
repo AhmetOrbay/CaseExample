@@ -6,7 +6,7 @@ namespace HotelLibrary.Models
     {
 
         [ForeignKey("Country")]
-        public int CountryId { get; set; }
+        public long CountryId { get; set; }
         public virtual Country Country { get; set; }
     }
 }

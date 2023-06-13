@@ -9,6 +9,6 @@ namespace HotelLibrary.Models
         public string HotelEmail { get; set; }
         public DateTime COntactCreatedDate { get; set; }
         public long HotelId { get; set; }
-        public Hotel Hotel { get; set; }
+        public Hotel? Hotel { get; set; }
     }
 }

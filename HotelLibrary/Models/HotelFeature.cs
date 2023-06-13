@@ -7,5 +7,6 @@ namespace HotelLibrary.Models
         [ForeignKey("Hotel")]
         public long HotelId { get; set; }
         public Hotel Hotels { get; set; }
+        public bool IsDelete { get; set; } = false;
     }
 }

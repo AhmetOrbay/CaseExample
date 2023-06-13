@@ -1,4 +1,4 @@
-﻿namespace HotelService.Models
+﻿namespace HotelLibrary.Models
 {
     public class ElasticSettings
     {

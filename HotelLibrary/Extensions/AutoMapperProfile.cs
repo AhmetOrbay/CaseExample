@@ -42,7 +42,7 @@ namespace HotelLibrary.Extensions
                 .ReverseMap();
 
             CreateMap<HotelImages, HotelImagesDto>()
-                 .ForMember(dest => dest.Hotel, opt => opt.MapFrom(src => src.Hotel))
+                 .ForMember(dest => dest.Hotels, opt => opt.MapFrom(src => src.Hotels))
                 .ReverseMap();
 
             CreateMap<HotelManager, HotelManagerDto>()

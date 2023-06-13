@@ -15,7 +15,10 @@ namespace HotelLibrary.Interfaces
         Task<ResponseData<HotelDto>> CreateHotel(HotelDto hotel);
         Task<ResponseData<HotelDto>> UpdateHotel(HotelDto hotel);
         Task<ResponseData<List<HotelManagerDto>>> GetHotelManager(long HotelId);
-
+        Task<ResponseData<bool>> DeleteHotel(long Id); 
+        Task<ResponseData<HotelContactDto>> AddHotelContact(HotelContactDto hotelContact);
+        Task<ResponseData<bool>> HotelContactDelete(long hotelContactId);
+        Task<ResponseData<List<HotelManagerDto>>> GetHotelByManagerList(long HotelId);
 
     }
 }

@@ -8,7 +8,7 @@ namespace HotelLibrary.Dtos
         public string TelephoneNumber { get; set; }
         public string Email { get; set; }
         public long HotelId { get; set; }
-        public HotelDto Hotels { get; set; }
+        public  HotelDto? Hotels { get; set; }
         public DateTime ManagerCreatedDate { get; set; }
     }
 }

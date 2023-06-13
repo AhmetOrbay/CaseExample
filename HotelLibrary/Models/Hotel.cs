@@ -11,7 +11,7 @@ namespace HotelLibrary.Models
         public Address Address { get; set; }
         public decimal HotelPoint { get; set; }
         public HotelStatus HotelStatus { get; set; }
-        public bool IsDelete { get; set; }
+        public bool IsDelete { get; set; } = false;
         public decimal OneDayPrice { get; set; }
         public RoomType RoomType { get; set;}
         public ICollection<HotelImages> HotelImages { get; set; }

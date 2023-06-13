@@ -10,7 +10,7 @@ namespace HotelLibrary.Models
         [MaxLength(100)]
         public string AddressDetailField { get; set; }
         [ForeignKey("District")]
-        public int DistrictId { get; set; }
+        public long DistrictId { get; set; }
         public District District { get; set; }
         public string GoogleLocation { get; set; }
     }
