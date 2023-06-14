@@ -1,4 +1,4 @@
-
+﻿
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ReportLibrary.Interfaces;
 using ReportLibrary.Models;
@@ -11,6 +11,13 @@ using Serilog.AspNetCore;
 using System.Text;
 using Serilog.Sinks.Elasticsearch;
 using ReportLibrary.Extensions;
+using Elasticsearch.Net;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
+using ReportLibrary.Model.RabbitMqModel;
+using RabbitMQ.Client;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ReportService
 {
@@ -69,10 +76,35 @@ namespace ReportService
 
             builder.Services.AddDbContext<ReportDbContext>(config =>
             {
-                config.UseNpgsql(@"User ID=postgres;Password=qwe789asd;Server=localhost;Port=5432;Database=HotelDb;Integrated Security=true;Pooling=true;");
+                config.UseNpgsql(@"User ID=postgres;Password=qwe789asd;Server=localhost;Port=5432;Database=ReportDb;Integrated Security=true;Pooling=true;");
                 config.EnableSensitiveDataLogging();
             });
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+
+            #region JWT
+
+            #endregion
+
+            #region RabbitMq
+                var rabbitMQConfig = builder.Configuration.GetSection("RabbitMQSettings").Get<RabbitMQSettingsModel>();
+
+                // RabbitMQ bağlantısını oluşturun
+                var connectionFactory = new ConnectionFactory
+                {
+                    HostName = rabbitMQConfig.HostName,
+                    Port = rabbitMQConfig.Port,
+                    UserName = rabbitMQConfig.UserName,
+                    Password = rabbitMQConfig.Password
+                };
+                var connection = connectionFactory.CreateConnection();
+
+                // RabbitMQ kanalını oluşturun
+                var channel = connection.CreateModel();
+
+                // RabbitMQ servisini DI konteynerine ekleyin
+                builder.Services.AddSingleton<IConnection>(connection);
+            builder.Services.AddSingleton<IModel>(channel);
+            #endregion
             builder.Services.AddAuthentication(opt =>
             {
                 opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
