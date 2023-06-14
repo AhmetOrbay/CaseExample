@@ -11,12 +11,12 @@ namespace HotelLibrary.Services
     public class HotelServices : IHotelService
     {
         private readonly HotelDbContext _hotelDbContext;
-        private readonly ILogger<ElasticsearchLogger> _logger;
+        private readonly ILogger<HotelServices> _logger;
         private readonly IMapper _mapper;
 
         public HotelServices(HotelDbContext hotelDbContext
                     , IMapper mapper
-                    , ILogger<ElasticsearchLogger> logger)
+                    , ILogger<HotelServices> logger)
         {
             _hotelDbContext = hotelDbContext;
             _mapper  = mapper;
@@ -36,6 +36,8 @@ namespace HotelLibrary.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Hotel Error => {ex.Message}");
+
                 response.ErrorMessage = $"{ex.Message}";
             }
             return response;

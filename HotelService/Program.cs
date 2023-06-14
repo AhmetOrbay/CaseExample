@@ -4,13 +4,15 @@ using HotelLibrary.Interfaces;
 using HotelLibrary.Models;
 using HotelLibrary.Repositories;
 using HotelLibrary.Services;
-using HotelService.Models;
-using HotelService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Serilog.Events;
+using Serilog;
+using Serilog.AspNetCore;
 using System.Text;
+using Serilog.Sinks.Elasticsearch;
+
 
 namespace HotelService
 {
@@ -19,6 +21,40 @@ namespace HotelService
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            var CONFIG = builder.Configuration;
+            var elasticsearchUrl = CONFIG["ElasticsearchSettings:Url"];
+            builder.Host.UseSerilog();//(context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
+
+            builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            Log.Logger = new LoggerConfiguration()
+                     .Enrich.FromLogContext()
+                     .Enrich.WithMachineName()
+                     .Enrich.WithEnvironmentUserName()
+                    .WriteTo.File("Log.txt")
+                     .WriteTo.Logger(lc => lc
+                         .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Error)
+                         .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(CONFIG["ElasticsearchSettings:Url"]))
+                         {
+                             AutoRegisterTemplate = true,
+                             IndexFormat = "error-{0:yyyy.MM.dd}",
+                         })
+                         .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Information)
+                         .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(CONFIG["ElasticsearchSettings:Url"]))
+                         {
+                             AutoRegisterTemplate = true,
+                             IndexFormat = "Information-{0:yyyy.MM.dd}"
+                         })
+                     )
+                     .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(CONFIG["ElasticsearchSettings:Url"]))
+                     {
+                         AutoRegisterTemplate = true,
+                         IndexFormat = "log-{0:yyyy.MM.dd}"
+                     })
+
+                     .CreateLogger();
+
 
             // Add services to the container.
 
@@ -59,11 +95,16 @@ namespace HotelService
             });
             builder.Services.AddSingleton<JwtHandler>(provider => new JwtHandler(builder.Configuration["Jwt:JwtSecurityKey2"]));
 
+            builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
+
 
             builder.Services.AddTransient<IHotelService, HotelServices>();
             builder.Services.AddScoped<HotelDbContext>();
-            builder.Services.AddSingleton<ILogger,ElasticsearchLogger>();
+
+
+
             var app = builder.Build();
+            app.UseSerilogRequestLogging();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
