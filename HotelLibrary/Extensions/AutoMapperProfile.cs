@@ -23,7 +23,7 @@ namespace HotelLibrary.Extensions
                 .ForMember(dest => dest.Cities, opt => opt.MapFrom(src => src.Cities))
                 .ReverseMap();
             CreateMap<District, DistrictDto>()
-                 .ForMember(dest => dest.Country, opt => opt.MapFrom(src => src.Country))
+                 .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))
                 .ReverseMap();
             CreateMap<Hotel, HotelDto>()
                  .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))

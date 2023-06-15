@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using HotelLibrary.Dtos;
 using HotelLibrary.Interfaces;
+using HotelLibrary.Model;
 using HotelLibrary.Models;
+using HotelLibrary.Models.RabbitMq;
 using HotelLibrary.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -202,6 +204,45 @@ namespace HotelLibrary.Services
             {
                 _logger.LogError($"Hotel Error => {ex.Message}");
                 response.ErrorMessage = $"{ex.Message}";
+            }
+            return response;
+        }
+
+
+
+        public async Task<ReportDetail> GetReportDetails(ConsumeModel Consume)
+        {
+            //rapor detail al.
+            ReportDetail response = new();
+            try
+            {
+                var query = _hotelDbContext.Hotels
+                    .Include(x=>x.HotelContacts)
+                    .Include(x => x.Address)
+                    .ThenInclude(x=>x.District)
+                    .ThenInclude(x=>x.City)
+                    .ThenInclude(x=>x.Country)
+                    .Include(x => x.HotelContacts)
+                    .Where(x => x.Address.District.Name == Consume.District
+                            && x.Address.District.City.Name == Consume.City
+                            && x.Address.District.City.Country.Name == Consume.Country);
+
+
+                var dbData = await query.ToListAsync();
+                var model = new ReportDetail()
+                {
+                    City = Consume.City,
+                    Country = Consume.Country,
+                    District = Consume.District,
+                    GoogleLocation = Consume.GoogleLocation,
+                    LocationHotelCount = dbData.Count(),
+                    LocationTelephoneCount = dbData.Sum(x => x.HotelContacts.Count())
+                };
+                return model;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Report Detail Error => {ex.Message}");
             }
             return response;
         }

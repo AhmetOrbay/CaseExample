@@ -8,6 +8,6 @@ namespace HotelLibrary.Models
 
         [ForeignKey("City")]
         public long CityId { get; set; }
-        public virtual City Country { get; set; }
+        public virtual City City { get; set; }
     }
 }

@@ -5,6 +5,6 @@ namespace HotelLibrary.Dtos
     {
 
         public long CityId { get; set; }
-        public CityDto? Country { get; set; }
+        public CityDto? City { get; set; }
     }
 }

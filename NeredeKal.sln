@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HotelService", "HotelServic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HotelLibrary", "HotelLibrary\HotelLibrary.csproj", "{FE700235-C6CD-4C90-8EE8-4D8BCB4A9279}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportService", "ReportService\ReportService.csproj", "{39269CAF-8AF8-421A-9AFA-47D253E6751B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReportService", "ReportService\ReportService.csproj", "{39269CAF-8AF8-421A-9AFA-47D253E6751B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportLibrary", "ReportLibrary\ReportLibrary.csproj", "{05A634DE-213C-4337-B50F-ACAADF6FCEEA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReportLibrary", "ReportLibrary\ReportLibrary.csproj", "{05A634DE-213C-4337-B50F-ACAADF6FCEEA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

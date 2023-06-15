@@ -8,5 +8,6 @@ namespace HotelLibrary.Models
         [ForeignKey("Country")]
         public long CountryId { get; set; }
         public virtual Country Country { get; set; }
+        public ICollection<District> Districts { get; set; }
     }
 }

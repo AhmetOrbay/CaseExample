@@ -1,5 +1,7 @@
 ﻿using HotelLibrary.Dtos;
+using HotelLibrary.Model;
 using HotelLibrary.Models;
+using HotelLibrary.Models.RabbitMq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +21,7 @@ namespace HotelLibrary.Interfaces
         Task<ResponseData<HotelContactDto>> AddHotelContact(HotelContactDto hotelContact);
         Task<ResponseData<bool>> HotelContactDelete(long hotelContactId);
         Task<ResponseData<List<HotelManagerDto>>> GetHotelByManagerList(long HotelId);
+        Task<ReportDetail> GetReportDetails(ConsumeModel Consume);
 
     }
 }

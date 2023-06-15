@@ -9,10 +9,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog.Events;
 using Serilog;
-using Serilog.AspNetCore;
 using System.Text;
 using Serilog.Sinks.Elasticsearch;
-
+using RabbitMQ.Client;
+using HotelLibrary.Model.RabbitMqModel;
+using HotelLibrary.Services.RabbitMq;
 
 namespace HotelService
 {
@@ -28,38 +29,10 @@ namespace HotelService
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            Log.Logger = new LoggerConfiguration()
-                     .Enrich.FromLogContext()
-                     .Enrich.WithMachineName()
-                     .Enrich.WithEnvironmentUserName()
-                    .WriteTo.File("Log.txt")
-                     .WriteTo.Logger(lc => lc
-                         .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Error)
-                         .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(CONFIG["ElasticsearchSettings:Url"]))
-                         {
-                             AutoRegisterTemplate = true,
-                             IndexFormat = "error-{0:yyyy.MM.dd}",
-                         })
-                         .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Information)
-                         .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(CONFIG["ElasticsearchSettings:Url"]))
-                         {
-                             AutoRegisterTemplate = true,
-                             IndexFormat = "Information-{0:yyyy.MM.dd}"
-                         })
-                     )
-                     .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(CONFIG["ElasticsearchSettings:Url"]))
-                     {
-                         AutoRegisterTemplate = true,
-                         IndexFormat = "log-{0:yyyy.MM.dd}"
-                     })
-
-                     .CreateLogger();
-
-
-            // Add services to the container.
-
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddSingleton(Log.Logger);
+
+
             builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddSwaggerGen(option =>
@@ -75,26 +48,51 @@ namespace HotelService
                 config.EnableSensitiveDataLogging();
             });
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
-            builder.Services.AddAuthentication(opt =>
-            {
-                opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["JwtIssuer"],
-                    ValidAudience = builder.Configuration["JwtAudience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSecurityKey2"]))
-                };
-            });
-            builder.Services.AddSingleton<JwtHandler>(provider => new JwtHandler(builder.Configuration["Jwt:JwtSecurityKey2"]));
 
+            #region JWT
+
+                builder.Services.AddAuthentication(opt =>
+                {
+                    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["JwtIssuer"],
+                        ValidAudience = builder.Configuration["JwtAudience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSecurityKey2"]))
+                    };
+                });
+                builder.Services.AddSingleton<JwtHandler>(provider => new JwtHandler(builder.Configuration["Jwt:JwtSecurityKey2"]));
+
+            #endregion
+
+
+            #region RABBITMQ
+                var rabbitMQConfig = builder.Configuration.GetSection("RabbitMQSettings").Get<RabbitMQSettingsModel>();
+
+                builder.Services.AddSingleton<ConnectionFactory>(sp =>
+                {
+                    var factory = new ConnectionFactory()
+                    {
+                        HostName = rabbitMQConfig.HostName,
+                        UserName = rabbitMQConfig.UserName,
+                        Password = rabbitMQConfig.Password,
+                        Port = rabbitMQConfig.Port
+                    };
+                    return factory;
+                });
+                builder.Services.AddHostedService<RabbitMQBackgroundService>();
+                builder.Services.AddScoped<PublishRabbitMQService>();
+
+
+            #endregion
             builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
 
 
@@ -104,9 +102,32 @@ namespace HotelService
 
 
             var app = builder.Build();
+
+            Log.Logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .Enrich.WithMachineName()
+                .Enrich.WithEnvironmentUserName()
+                .WriteTo.Console()
+                .WriteTo.File("error.txt", LogEventLevel.Error)
+                .WriteTo.File("information.txt", LogEventLevel.Information)
+                .MinimumLevel.Error()
+                .MinimumLevel.Information()
+                .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticsearchUrl))
+                {
+                    AutoRegisterTemplate = true,
+                    IndexFormat = "Error--Hotel-{0:yyyy.MM.dd}",
+                    MinimumLogEventLevel = LogEventLevel.Error
+                })
+                .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticsearchUrl))
+                {
+                    AutoRegisterTemplate = true,
+                    IndexFormat = "info-Hotel-{0:yyyy.MM.dd}",
+                    MinimumLogEventLevel = LogEventLevel.Information
+                })
+                .CreateLogger();
+
             app.UseSerilogRequestLogging();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
