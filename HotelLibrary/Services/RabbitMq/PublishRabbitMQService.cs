@@ -9,7 +9,6 @@ namespace HotelLibrary.Services.RabbitMq
 {
     public class PublishRabbitMQService
     {
-        private readonly string queueName = "ReportMq";
         private readonly ConnectionFactory _connectionFactory;
 
         public PublishRabbitMQService(ConnectionFactory connectionFactory)
@@ -17,7 +16,7 @@ namespace HotelLibrary.Services.RabbitMq
             _connectionFactory = connectionFactory;
         }
 
-        public void PublishMessage(string message)
+        public void PublishMessage(string message,string queueName)
         {
             using (var connection = _connectionFactory.CreateConnection())
             using (var channel = connection.CreateModel())

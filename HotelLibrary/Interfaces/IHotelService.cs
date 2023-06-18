@@ -21,7 +21,7 @@ namespace HotelLibrary.Interfaces
         Task<ResponseData<HotelContactDto>> AddHotelContact(HotelContactDto hotelContact);
         Task<ResponseData<bool>> HotelContactDelete(long hotelContactId);
         Task<ResponseData<List<HotelManagerDto>>> GetHotelByManagerList(long HotelId);
-        Task<ReportDetail> GetReportDetails(ConsumeModel Consume);
+        //Task<ReportDetail> GetReportDetails(ConsumeModel Consume);
 
     }
 }

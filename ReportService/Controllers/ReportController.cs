@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ReportLibrary.Interfaces;
+using ReportLibrary.Model;
 using ReportLibrary.Services.RabbitMq;
 
 namespace ReportService.Controllers
@@ -16,25 +17,40 @@ namespace ReportService.Controllers
             _reportService = reportService;
         }
 
-        [HttpGet("CreatedReport/{OtelId}")]
-        public IActionResult CreatedReport(long OtelId)
+        /// <summary>
+        /// Created Report Request
+        /// </summary>
+        /// <param name="HotelId"></param>
+        /// <returns></returns>
+
+        [HttpGet("CreatedReport/{HotelId}")]
+        public async Task<ResponseData<bool>> CreatedReport(long HotelId)
         {
-           var result =  _reportService.CreatedReport(OtelId);
-            return Ok(result);
+           var result = await  _reportService.CreatedReport(HotelId);
+            return result;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> GetListReport()
+        /// <summary>
+        /// Full Report List
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("ReportList")]
+        public async Task<ResponseData<List<Report>>> GetListReport()
         {
             var result = await _reportService.GetListReport();
-            return Ok(result);
+            return result;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> GetReportDetail([FromBody] long Id)
+        /// <summary>
+        /// Report by ID
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [HttpPost("ReportDetail/{Id}")]
+        public async Task<ResponseData<ReportDetail>> GetReportDetail([FromBody] long Id)
         {
             var result =await  _reportService.GetReportDetail(Id);
-            return Ok(result);
+            return result;
         }
     }
 }

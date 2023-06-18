@@ -9,10 +9,9 @@ namespace ReportLibrary.Interfaces
 {
     public interface IReportService
     {
-        Task<List<Report>> GetListReport();
-        Task<bool> CreatedReport(long HotelId);
-        Task<ReportDetail> GetReportDetail(long Id);
-        Task AddReportDetail(ReportDetail modelDetail);
+        Task<ResponseData<List<Report>>> GetListReport();
+        Task<ResponseData<bool>> CreatedReport(long HotelId);
+        Task<ResponseData<ReportDetail>> GetReportDetail(long Id);
 
     }
 }

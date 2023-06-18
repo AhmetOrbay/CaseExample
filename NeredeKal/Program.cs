@@ -1,3 +1,13 @@
+﻿
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+using Ocelot.Values;
+using System.Text;
 
 namespace NeredeKal
 {
@@ -6,17 +16,55 @@ namespace NeredeKal
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
+            Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+                .AddJsonFile("appsettings.json", false, true)
+                //.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
+                .AddEnvironmentVariables();
+            });
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
+
+            //builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            var audienceConfig = builder.Configuration.GetSection("Audience");
+            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(audienceConfig["Secret"]));
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = signingKey,
+                ValidateIssuer = true,
+                ValidIssuer = audienceConfig["Iss"],
+                ValidateAudience = true,
+                ValidAudience = audienceConfig["Aud"],
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+                RequireExpirationTime = true,
+            };
+
+            builder.Services.AddAuthentication(o =>
+            {
+                o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer("Bearer", x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.TokenValidationParameters = tokenValidationParameters;
+            });
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+            });
+            builder.Services.AddOcelot(builder.Configuration);
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -24,11 +72,13 @@ namespace NeredeKal
             }
 
             app.UseHttpsRedirection();
+            app.UseRouting();
 
             app.UseAuthorization();
+            app.UseAuthentication();
 
-
-            app.MapControllers();
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseOcelot().Wait();
 
             app.Run();
         }

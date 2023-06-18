@@ -32,7 +32,7 @@ namespace ReportService
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            
+            builder.Services.AddSingleton(Log.Logger);
 
             builder.Services.AddControllers();
 
@@ -45,7 +45,7 @@ namespace ReportService
             });
             builder.Services.Configure<ElasticSettings>(builder.Configuration.GetSection("ElasticsearchSettings"));
 
-            builder.Services.AddDbContext<ReportDbContext>(config =>
+            builder.Services.AddDbContextPool<ReportDbContext>(config =>
             {
                 config.UseNpgsql(@"User ID=postgres;Password=qwe789asd;Server=localhost;Port=5432;Database=ReportDb;Integrated Security=true;Pooling=true;");
                 config.EnableSensitiveDataLogging();
@@ -87,8 +87,12 @@ namespace ReportService
                 };
                 return factory;
             });
+
+
+            builder.Services.AddSingleton<ReportDbContext>();
+            builder.Services.AddSingleton<IReportService, ReportLibrary.Services.ReportService>();
             builder.Services.AddHostedService<RabbitMQBackgroundService>();
-            builder.Services.AddScoped<PublishRabbitMQService>();
+            builder.Services.AddSingleton<PublishRabbitMQService>();
 
 
             #endregion
@@ -96,11 +100,6 @@ namespace ReportService
             builder.Services.AddSingleton<JwtHandler>(provider => new JwtHandler(builder.Configuration["Jwt:JwtSecurityKey2"]));
 
             builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
-
-
-            builder.Services.AddTransient<IReportService, ReportLibrary.Services.ReportService>();
-            builder.Services.AddScoped<ReportDbContext>();
-
 
             var app = builder.Build();
 
@@ -129,10 +128,6 @@ namespace ReportService
 
             app.UseSerilogRequestLogging();
 
-
-            var rabbitMQListener = app.Services.GetService<RabbitMQBackgroundService>();
-
-            //rabbitMQListener.ExecuteAsync();
             app.UseSerilogRequestLogging();
 
 

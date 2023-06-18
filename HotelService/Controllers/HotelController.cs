@@ -6,65 +6,27 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Net;
 using System.Reflection.Metadata;
 
 namespace HotelService.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     //[Authorize]
     public class HotelController : Controller
     {
-        private readonly JwtHandler _jwtHandler;
+        //private readonly JwtHandler _jwtHandler;
         private readonly IHotelService _hotelService;
 
-        public HotelController(JwtHandler jwtHandler
-                            , IHotelService hotelService)
+        public HotelController(
+            //JwtHandler jwtHandler,
+                             IHotelService hotelService)
         {
-            _jwtHandler = jwtHandler;
+            //_jwtHandler = jwtHandler;
             _hotelService = hotelService;
-    }
-
-        [AllowAnonymous]
-
-        [HttpGet("GetToken")]
-        public async Task<bool> GetToken()
-        {
-            var aa = _jwtHandler.GenerateJwt("Key2");
-            return true;
         }
 
-        /// <summary>
-        /// This section is for pulling user information from the Report section.
-        /// Parse the sent token with the parameter and check the key
-        /// Get user information with id
-        /// </summary>
-        /// <param name="Id"></param>
-        /// <param name="Token"></param>
-        /// <returns></returns>
-
-        [AllowAnonymous]
-        [HttpGet("GetPrivateMethodCheck/{Id}/{Token}")]
-        public async Task<bool> GetPrivateMethodCheck(long Id,string Token)
-        {
-            string jwt = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
-            // İlgili anahtarın kullanıldığı JWT'yi doğrulayın
-            bool isValidKey1 = _jwtHandler.ValidateJwt(jwt, "key1");
-            bool isValidKey2 = _jwtHandler.ValidateJwt(jwt, "key2");
-
-            if (isValidKey1)
-            {
-            }
-            else if (isValidKey2)
-            {
-            }
-            else
-            {
-                return false;
-            }
-            return true;
-        }
 
         /// <summary>
         /// Hotel creation
@@ -72,6 +34,10 @@ namespace HotelService.Controllers
         /// <param name="hotel"></param>
         /// <returns></returns>
         [HttpPost("AddedHotel")]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ResponseData<HotelDto>), (int)HttpStatusCode.OK)]
+
         public async Task<ResponseData<HotelDto>> CreateHotel(HotelDto hotel)
         {
             return await _hotelService.CreateHotel(hotel);
@@ -83,6 +49,9 @@ namespace HotelService.Controllers
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpPost("DeleteHotel")]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ResponseData<bool>), (int)HttpStatusCode.OK)]
         public async Task<ResponseData<bool>> HotelDelete(long Id)
         {
             return await _hotelService.DeleteHotel(Id);
@@ -94,6 +63,10 @@ namespace HotelService.Controllers
         /// <param name="hotel"></param>
         /// <returns></returns>
         [HttpPost("AddedHotelContact")]
+
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ResponseData<HotelContactDto>), (int)HttpStatusCode.OK)]
         public async Task<ResponseData<HotelContactDto>> CreateHotelContact(HotelContactDto hotel)
         {
             return await _hotelService.AddHotelContact(hotel);
@@ -105,6 +78,10 @@ namespace HotelService.Controllers
         /// <param name="ContactId"></param>
         /// <returns></returns>
         [HttpPost("DeleteHotelContact")]
+
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ResponseData<bool>), (int)HttpStatusCode.OK)]
         public async Task<ResponseData<bool>> HotelContactDelete(long ContactId)
         {
             return await _hotelService.HotelContactDelete(ContactId);
@@ -116,6 +93,9 @@ namespace HotelService.Controllers
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpGet("GetHotelManagers/{Id}")]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ResponseData<List<HotelManagerDto>>), (int)HttpStatusCode.OK)]
         public async Task<ResponseData<List<HotelManagerDto>>> GetHotelManagers(long Id)
         {
             return await _hotelService.GetHotelManager(Id);
@@ -128,9 +108,27 @@ namespace HotelService.Controllers
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpGet("GetHotelDetail/{Id}")]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ResponseData<List<HotelDto>>), (int)HttpStatusCode.OK)]
         public async Task<ResponseData<HotelDto>> GetHotelById(long Id)
         {
             return await _hotelService.GetHotelById(Id);
+        }
+
+
+        /// <summary>
+        /// Returns the hotel List.
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [HttpGet("GetHotelList")]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ResponseData<List<HotelDto>>), (int)HttpStatusCode.OK)]
+        public async Task<ResponseData<List<HotelDto>>> GetHotelList()
+        {
+            return await _hotelService.GetHotelList();
         }
     }
 }

@@ -14,6 +14,8 @@ using Serilog.Sinks.Elasticsearch;
 using RabbitMQ.Client;
 using HotelLibrary.Model.RabbitMqModel;
 using HotelLibrary.Services.RabbitMq;
+using ReportLibrary.Repositories;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HotelService
 {
@@ -42,36 +44,36 @@ namespace HotelService
             });
             builder.Services.Configure<ElasticSettings>(builder.Configuration.GetSection("ElasticsearchSettings"));
 
-            builder.Services.AddDbContext<HotelDbContext>(config =>
+            builder.Services.AddDbContextPool<HotelDbContext>(config =>
             {
                 config.UseNpgsql(@"User ID=postgres;Password=qwe789asd;Server=localhost;Port=5432;Database=HotelDb;Integrated Security=true;Pooling=true;");
                 config.EnableSensitiveDataLogging();
             });
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
-            #region JWT
+            //#region JWT
 
-                builder.Services.AddAuthentication(opt =>
-                {
-                    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = builder.Configuration["JwtIssuer"],
-                        ValidAudience = builder.Configuration["JwtAudience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSecurityKey2"]))
-                    };
-                });
-                builder.Services.AddSingleton<JwtHandler>(provider => new JwtHandler(builder.Configuration["Jwt:JwtSecurityKey2"]));
+            //    builder.Services.AddAuthentication(opt =>
+            //    {
+            //        opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            //        opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            //    })
+            //    .AddJwtBearer(options =>
+            //    {
+            //        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            //        {
+            //            ValidateIssuer = true,
+            //            ValidateAudience = true,
+            //            ValidateLifetime = true,
+            //            ValidateIssuerSigningKey = true,
+            //            ValidIssuer = builder.Configuration["JwtIssuer"],
+            //            ValidAudience = builder.Configuration["JwtAudience"],
+            //            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSecurityKey2"]))
+            //        };
+            //    });
+            //    builder.Services.AddSingleton<JwtHandler>(provider => new JwtHandler(builder.Configuration["Jwt:JwtSecurityKey2"]));
 
-            #endregion
+            //#endregion
 
 
             #region RABBITMQ
@@ -88,16 +90,18 @@ namespace HotelService
                     };
                     return factory;
                 });
-                builder.Services.AddHostedService<RabbitMQBackgroundService>();
-                builder.Services.AddScoped<PublishRabbitMQService>();
+
+            builder.Services.AddSingleton<HotelDbContext>();
+            builder.Services.AddSingleton<IHotelService, HotelServices>();
+            builder.Services.AddHostedService<RabbitMQBackgroundService>();
+            builder.Services.AddSingleton<PublishRabbitMQService>();
+            //builder.Services.AddHostedService<RabbitMQBackgroundService>();
 
 
             #endregion
             builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
 
 
-            builder.Services.AddTransient<IHotelService, HotelServices>();
-            builder.Services.AddScoped<HotelDbContext>();
 
 
 
@@ -142,7 +146,7 @@ namespace HotelService
 
 
             app.UseAuthentication();
-            app.UseAuthorization();
+            //app.UseAuthorization();
 
             app.MapControllers();
 

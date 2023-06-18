@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HotelLibrary.Dtos
+namespace ReportLibrary.Model
 {
     public class ResponseData<T>
     {
@@ -14,6 +14,6 @@ namespace HotelLibrary.Dtos
 
         public T Data { get; set; }
         public string ErrorMessage { get; set; }
-        public bool IsSuccess { get=>string.IsNullOrEmpty(ErrorMessage); }
+        public bool IsSuccess { get => string.IsNullOrEmpty(ErrorMessage); }
     }
 }

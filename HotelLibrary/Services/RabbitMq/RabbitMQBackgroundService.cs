@@ -10,6 +10,10 @@ using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 using HotelLibrary.Models.RabbitMq;
 using HotelLibrary.Interfaces;
+using HotelLibrary.Repositories;
+using HotelLibrary.Model;
+using Microsoft.EntityFrameworkCore;
+using HotelLibrary.Models;
 
 namespace HotelLibrary.Services.RabbitMq
 {
@@ -17,27 +21,26 @@ namespace HotelLibrary.Services.RabbitMq
     {
         private readonly ILogger<RabbitMQBackgroundService> _logger;
         private readonly string queueName = "ReportRequest";
+        private readonly string queuePublishName = "ReportMq";
         private readonly ConnectionFactory _connectionFactory;
-        private readonly IHotelService _hotelService;
+        private readonly HotelDbContext _HotelDbContext;
         private readonly PublishRabbitMQService _publishRabbitMQService;
 
-        public RabbitMQBackgroundService(ILogger<RabbitMQBackgroundService> logger
-                            , ConnectionFactory connectionFactory
-                            , IHotelService hotelService,
-                              PublishRabbitMQService publishRabbitMQService)
+        public RabbitMQBackgroundService(ILogger<RabbitMQBackgroundService> logger, ConnectionFactory connectionFactory, HotelDbContext HotelDbContext,
+          PublishRabbitMQService publishRabbitMQService)
         {
             _logger = logger;
             _connectionFactory = connectionFactory;
-            _hotelService = hotelService;
+            _HotelDbContext = HotelDbContext;
             _publishRabbitMQService = publishRabbitMQService;
-            
+
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
 
             stoppingToken.Register(() =>
-                _logger.LogInformation("RabbitMQ background service is stopping."));
+              _logger.LogInformation("RabbitMQ background service is stopping."));
 
             using (var connection = _connectionFactory.CreateConnection())
             using (var channel = connection.CreateModel())
@@ -45,14 +48,13 @@ namespace HotelLibrary.Services.RabbitMq
                 channel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
 
                 var consumer = new EventingBasicConsumer(channel);
-                consumer.Received += (model, ea) =>
-                {
+                consumer.Received += (model, ea) => {
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
                     _logger.LogInformation("incoming message: {0}", message);
                     var ConsumeData = JsonSerializer.Deserialize<ConsumeModel>(message);
-                    var publish = _hotelService.GetReportDetails(ConsumeData);
-                    _publishRabbitMQService.PublishMessage(JsonSerializer.Serialize(publish));
+                    var publish = GetReportDetails(ConsumeData);
+                    _publishRabbitMQService.PublishMessage(JsonSerializer.Serialize(publish), queuePublishName);
                     _logger.LogInformation("Publish Data message: {0}", message);
                 };
 
@@ -65,6 +67,62 @@ namespace HotelLibrary.Services.RabbitMq
             }
 
             _logger.LogInformation("RabbitMQ background service has stopped.");
+        }
+
+        private ReportDetail GetReportDetails(ConsumeModel Consume)
+        {
+            ReportDetail response = new();
+            try
+            {
+                var hotel = GetHotel(Consume.HotelId);
+                var dbData = GetHotelList(Consume, hotel.Address.District);
+                response = new ReportDetail()
+                {
+                    City = Consume.City,
+                    Country = Consume.Country,
+                    District = Consume.District,
+                    GoogleLocation = Consume.GoogleLocation,
+                    LocationHotelCount = dbData.Count(),
+                    LocationTelephoneCount = dbData.Sum(x => x.HotelContacts.Count()),
+                    ReportId = Consume.ReportId
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Report Detail Error => {ex.Message}");
+            }
+            return response;
+        }
+
+
+        private Hotel GetHotel(long HotelId)
+        {
+            var hotel = _HotelDbContext.Hotels
+                    .Include(x => x.Address).ThenInclude(x => x.District)
+                    .ThenInclude(x => x.City)
+                    .ThenInclude(x => x.Country)
+                    .FirstOrDefault(x => x.Id == HotelId);
+
+            return hotel;
+        }
+
+        private List<Hotel> GetHotelList(ConsumeModel Consume,District District)
+        {
+            var query = _HotelDbContext.Hotels
+                  .Include(x => x.HotelContacts)
+                  .Include(x => x.Address)
+                  .ThenInclude(x => x.District)
+                  .ThenInclude(x => x.City)
+                  .ThenInclude(x => x.Country)
+                  .Include(x => x.HotelContacts)
+                  .Where(x => x.Id == Consume.HotelId)
+                  .AsQueryable();
+            query = query.Where(x => x.Address.District.Name == District.Name).AsQueryable();
+            query = query.Where(x => x.Address.District.City.Name == District.City.Name).AsQueryable();
+            query = query.Where(x => x.Address.District.City.Country.Name == District.City.Country.Name).AsQueryable();
+
+            var dbData = query.ToList();
+            return dbData;
         }
     }
 }

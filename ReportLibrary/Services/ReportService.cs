@@ -29,17 +29,24 @@ namespace ReportLibrary.Services
             _reportDbContext = reportDbContext;
         }
 
-        public Task<bool> CreatedReport(long HotelId)
+        /// <summary>
+        /// Report created and publish rabbitMq
+        /// </summary>
+        /// <param name="HotelId"></param>
+        /// <returns></returns>
+        public async Task<ResponseData<bool>> CreatedReport(long HotelId)
         {
+            ResponseData<bool> model = new ();
             try
             {
                 if (HotelId > 0)
                 {
                     var entity = _reportDbContext.Reports.Add(new Report
                     {
-                        CreatedDateTime = DateTime.Now,
+                        CreatedDateTime = DateTime.Now.ToUniversalTime(),
                         Status = ReportStatus.Waiting
                     });
+                    await _reportDbContext.SaveChangesAsync();
                     if (entity.Entity.Id > 0)
                     {
                         var publishModel = new PublishModel()
@@ -48,73 +55,60 @@ namespace ReportLibrary.Services
                             ReportId = entity.Entity.Id
                         };
                         var resultPublish = _publishService.PublishMessage(
-                            JsonSerializer.Serialize(publishModel));
-                        return Task.FromResult(true);
+                            JsonSerializer.Serialize(publishModel), "ReportRequest");
+                        model.Data = true;
                     }
                 }
-                return Task.FromResult(false);
+                else
+                {
+                    model.ErrorMessage = $"The sent value is incorrect.";
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Publish Error => {ex.Message}");
-                return Task.FromResult(false);
+                model.ErrorMessage = $"The sent value is incorrect.";
             }
+            return await Task.FromResult(model);
         }
 
-        public async Task<List<Report>> GetListReport()
+        public async Task<ResponseData<List<Report>>> GetListReport()
         {
+            ResponseData<List<Report>> model = new();
+
             try
             {
-                return await _reportDbContext.Reports.ToListAsync();
+                var dataa =  await _reportDbContext.Reports.ToListAsync();
+                model.Data = dataa;
+
             }
             catch (Exception ex)
             {
                 _logger.LogError($"error => {ex.Message}");
-                return new List<Report>();
+                model.ErrorMessage = $"{ex.Message}";
             }
+            return model;
+                 
         }
 
-        public async Task<ReportDetail> GetReportDetail(long Id)
+        public async Task<ResponseData<ReportDetail>> GetReportDetail(long Id)
         {
+            ResponseData<ReportDetail> model = new();
+
             try
             {
                 var Result = await _reportDbContext.ReportDetails
                                         .FirstOrDefaultAsync(x => x.Id == Id);
-                return Result;
+                model.Data = Result;
             }
             catch (Exception ex)
             {
 
                 _logger.LogError($"error => {ex.Message}");
-                return new ReportDetail();
+                model.ErrorMessage = $"{ex.Message}";
             }
+            return model;
         }
 
-        public async Task AddReportDetail(ReportDetail modelDetail)
-        {
-            try
-            {
-                var entity = _reportDbContext.ReportDetails.Add(modelDetail);
-                if (entity.Entity.Id > 0)
-                {
-                    var report = _reportDbContext.Reports
-                                    .FirstOrDefault(x => x.Id == modelDetail.ReportId);
-                    if (report is not null)
-                    {
-                        report.Status = ReportStatus.Completed;
-                        _reportDbContext.Entry(report).Property(x => x.Status).IsModified = true;
-                    }
-                    else
-                    {
-
-                        _logger.LogError($"not found ReportsId => {report.Id}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"error => {ex.Message}");
-            }
-        }
     }
 }

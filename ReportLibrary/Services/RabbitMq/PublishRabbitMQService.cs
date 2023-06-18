@@ -9,7 +9,7 @@ namespace ReportLibrary.Services.RabbitMq
 {
     public class PublishRabbitMQService
     {
-        private readonly string queueName = "ReportRequest";
+        //private readonly string queueName = "ReportRequest";
         private readonly ConnectionFactory _connectionFactory;
 
         public PublishRabbitMQService(ConnectionFactory connectionFactory)
@@ -17,7 +17,7 @@ namespace ReportLibrary.Services.RabbitMq
             _connectionFactory = connectionFactory;
         }
 
-        public bool PublishMessage(string message)
+        public bool PublishMessage(string message,string queueName)
         {
             try
             {
