@@ -32,6 +32,10 @@ namespace UnitTest
             _Reportcontroller = new ReportController(_ReportServiceMock.Object);
         }
 
+        /// <summary>
+        /// Hotel Test Methods
+        /// </summary>
+        /// <returns></returns>
         #region HotelTest
 
             [Test]
@@ -148,6 +152,10 @@ namespace UnitTest
 
         #endregion
 
+        /// <summary>
+        /// Report test Method
+        /// </summary>
+        /// <returns></returns>
         #region Report
 
                 [Test]

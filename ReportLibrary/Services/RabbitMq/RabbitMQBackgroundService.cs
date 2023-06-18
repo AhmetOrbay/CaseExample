@@ -78,6 +78,11 @@ namespace ReportLibrary.Services.RabbitMq
             return base.StopAsync(cancellationToken);
         }
 
+
+        /// <summary>
+        /// Report detail Added
+        /// </summary>
+        /// <param name="modelDetail"></param>
         public void AddReportDetail(ReportDetail modelDetail)
         {
             try

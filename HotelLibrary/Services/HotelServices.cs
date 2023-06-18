@@ -25,6 +25,11 @@ namespace HotelLibrary.Services
             _logger = logger;  
         }
 
+        /// <summary>
+        /// create Hotel service
+        /// </summary>
+        /// <param name="hotel"></param>
+        /// <returns></returns>
         public async Task<ResponseData<HotelDto>> CreateHotel(HotelDto hotel)
         {
             ResponseData<HotelDto> response = new ();
@@ -44,6 +49,12 @@ namespace HotelLibrary.Services
             }
             return response;
         }
+
+        /// <summary>
+        /// Hotel by id get method
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
 
         public async Task<ResponseData<HotelDto>> GetHotelById(long Id)
         {
@@ -65,6 +76,10 @@ namespace HotelLibrary.Services
             return response;
         }
 
+        /// <summary>
+        /// Get full Hotel list 
+        /// </summary>
+        /// <returns></returns>
         public async Task<ResponseData<List<HotelDto>>> GetHotelList()
         {
             ResponseData<List<HotelDto>> response = new();
@@ -82,6 +97,11 @@ namespace HotelLibrary.Services
             return response;
         }
 
+        /// <summary>
+        /// Hotel managers get
+        /// </summary>
+        /// <param name="HotelId"></param>
+        /// <returns></returns>
         public async Task<ResponseData<List<HotelManagerDto>>> GetHotelManager(long HotelId)
         {
             ResponseData<List<HotelManagerDto>> response = new();
@@ -100,6 +120,12 @@ namespace HotelLibrary.Services
             return response;
         }
 
+
+        /// <summary>
+        /// Otel update method
+        /// </summary>
+        /// <param name="hotel"></param>
+        /// <returns></returns>
         public async Task<ResponseData<HotelDto>> UpdateHotel(HotelDto hotel)
         {
             ResponseData<HotelDto> response = new();
@@ -150,6 +176,11 @@ namespace HotelLibrary.Services
             return response;
         }
 
+        /// <summary>
+        /// Hotel contact Method
+        /// </summary>
+        /// <param name="hotelContact"></param>
+        /// <returns></returns>
         public async Task<ResponseData<HotelContactDto>> AddHotelContact(HotelContactDto hotelContact)
         {
             ResponseData<HotelContactDto> response = new();

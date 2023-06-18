@@ -20,10 +20,8 @@ namespace HotelService.Controllers
         private readonly IHotelService _hotelService;
 
         public HotelController(
-            //JwtHandler jwtHandler,
                              IHotelService hotelService)
         {
-            //_jwtHandler = jwtHandler;
             _hotelService = hotelService;
         }
 

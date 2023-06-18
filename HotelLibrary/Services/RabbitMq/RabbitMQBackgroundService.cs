@@ -69,6 +69,11 @@ namespace HotelLibrary.Services.RabbitMq
             _logger.LogInformation("RabbitMQ background service has stopped.");
         }
 
+        /// <summary>
+        /// Get Report Detail Created
+        /// </summary>
+        /// <param name="Consume"></param>
+        /// <returns></returns>
         private ReportDetail GetReportDetails(ConsumeModel Consume)
         {
             ReportDetail response = new();
@@ -94,7 +99,11 @@ namespace HotelLibrary.Services.RabbitMq
             return response;
         }
 
-
+        /// <summary>
+        /// Get Hotel By Id
+        /// </summary>
+        /// <param name="HotelId"></param>
+        /// <returns></returns>
         private Hotel GetHotel(long HotelId)
         {
             var hotel = _HotelDbContext.Hotels
@@ -106,6 +115,13 @@ namespace HotelLibrary.Services.RabbitMq
             return hotel;
         }
 
+
+        /// <summary>
+        /// Get Hotel List
+        /// </summary>
+        /// <param name="Consume"></param>
+        /// <param name="District"></param>
+        /// <returns></returns>
         private List<Hotel> GetHotelList(ConsumeModel Consume,District District)
         {
             var query = _HotelDbContext.Hotels

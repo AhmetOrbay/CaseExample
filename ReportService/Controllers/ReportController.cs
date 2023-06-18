@@ -2,6 +2,7 @@
 using ReportLibrary.Interfaces;
 using ReportLibrary.Model;
 using ReportLibrary.Services.RabbitMq;
+using System.Net;
 
 namespace ReportService.Controllers
 {
@@ -24,6 +25,9 @@ namespace ReportService.Controllers
         /// <returns></returns>
 
         [HttpGet("CreatedReport/{HotelId}")]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ResponseData<bool>), (int)HttpStatusCode.OK)]
         public async Task<ResponseData<bool>> CreatedReport(long HotelId)
         {
            var result = await  _reportService.CreatedReport(HotelId);
@@ -35,6 +39,9 @@ namespace ReportService.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost("ReportList")]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ResponseData<List<Report>>), (int)HttpStatusCode.OK)]
         public async Task<ResponseData<List<Report>>> GetListReport()
         {
             var result = await _reportService.GetListReport();
@@ -47,6 +54,9 @@ namespace ReportService.Controllers
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpPost("ReportDetail/{Id}")]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ResponseData<ReportDetail>), (int)HttpStatusCode.OK)]
         public async Task<ResponseData<ReportDetail>> GetReportDetail([FromBody] long Id)
         {
             var result =await  _reportService.GetReportDetail(Id);

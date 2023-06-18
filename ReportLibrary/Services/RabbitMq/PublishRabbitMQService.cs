@@ -17,6 +17,14 @@ namespace ReportLibrary.Services.RabbitMq
             _connectionFactory = connectionFactory;
         }
 
+
+        /// <summary>
+        /// Publish RabbitmQ 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="queueName"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public bool PublishMessage(string message,string queueName)
         {
             try
