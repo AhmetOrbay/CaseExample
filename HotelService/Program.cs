@@ -16,6 +16,7 @@ using HotelLibrary.Model.RabbitMqModel;
 using HotelLibrary.Services.RabbitMq;
 using ReportLibrary.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json.Serialization;
 
 namespace HotelService
 {
@@ -31,7 +32,8 @@ namespace HotelService
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddJsonOptions(x =>
+                x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
             builder.Services.AddSingleton(Log.Logger);
 
 
@@ -47,7 +49,10 @@ namespace HotelService
             builder.Services.AddDbContextPool<HotelDbContext>(config =>
             {
                 config.UseNpgsql(@"User ID=postgres;Password=qwe789asd;Server=localhost;Port=5432;Database=HotelDb;Integrated Security=true;Pooling=true;");
+
+
                 config.EnableSensitiveDataLogging();
+                
             });
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 

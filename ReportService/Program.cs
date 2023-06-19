@@ -17,6 +17,7 @@ using RabbitMQ.Client;
 using Microsoft.Extensions.DependencyInjection;
 using ReportLibrary.Services.RabbitMq;
 using System;
+using System.Text.Json.Serialization;
 
 namespace ReportService
 {
@@ -34,7 +35,8 @@ namespace ReportService
 
             builder.Services.AddSingleton(Log.Logger);
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddJsonOptions(x =>
+                x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles); ;
 
             builder.Services.AddEndpointsApiExplorer();
 
